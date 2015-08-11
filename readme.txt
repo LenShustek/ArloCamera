@@ -12,7 +12,7 @@ You push the switch either up or down, and it logs into the Arlo
 website and does the right mouse movements and clicks for you.
 It takes about a minute, but it happens automatically.
 
-I've described what I did in the file "instructions.txt".
-I would say this is a "medium hard" do-it-yourself project.
+The file "instructions.txt" is a description of how to build this.
+I would say it is a "medium hard" do-it-yourself project.
 
 -- Len Shustek, 11 Aug 2015
