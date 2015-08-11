@@ -44,6 +44,7 @@ Instructions for building a switchbox to turn the Netgear Arlo camera motion det
   - Close the File Manager and remove the USB stick.
   - Initialize the Xvnc server by typing "vncserver :99". Give it (and remember) a simple 6-character password. 
     Don't provide a view-only password.
+
 5.- Test your switch and light
    - In the terminal windows, type "bash testswitch"
    - Push switch up momentarily; the light should go on.
@@ -89,7 +90,8 @@ Instructions for building a switchbox to turn the Netgear Arlo camera motion det
 Other notes:
 
 -  I currently have only one camera. The mouse movements and clicks may have to change if you have more than one,
-   or if you have added custom Arlo modes. In the next week or so I'll be checking out the consequence of adding a second camera.
+   or if you have added custom Arlo modes. In the next week or so I'll be checking out the consequence of adding 
+   a second camera.
 
 - In general, this isn't a very robust solution, because it depends on exactly what's on the browser screen. Eventually
   we hope that Netgear will add a programming interface, perhaps using the USB ports on the Arlo gateway.
