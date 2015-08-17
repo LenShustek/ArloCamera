@@ -8,6 +8,7 @@
 # - change the "mode" (set motion on or off) of our camera
 
 # L. Shustek, 10 Aug 2015
+# L. Shustek, 17 Aug 2015; add green LED
 
 echo starting arlo camera controller
 
@@ -34,17 +35,21 @@ echo "high" | sudo tee /sys/class/gpio/gpio10/direction > /dev/null
 #GPIO11 is output: a red LED through a 680 ohm resistor to ground
 echo 11 | sudo tee /sys/class/gpio/export > /dev/null
 echo "out" | sudo tee /sys/class/gpio/gpio11/direction > /dev/null
-light=0
 
-#function to sleep n+1 seconds while flashing the light
-#(The light is left in its original state, $light.)
+#GPIO22 is output: a green LED through a 1K ohm resistor to ground
+echo 22 | sudo tee /sys/class/gpio/export > /dev/null
+echo "out" | sudo tee /sys/class/gpio/gpio22/direction > /dev/null
+
+#function to sleep n seconds while flashing the lights
 sleepn () {
  time="$1"
- sleep 1 # we do the n+1 sleep to make the light stutter between phases
+ sleep 0.5
  while [ $time -gt 0 ]; do
-   echo $((1-$light)) > /sys/class/gpio/gpio11/value
+   echo 1 > /sys/class/gpio/gpio11/value
+   echo 1 > /sys/class/gpio/gpio22/value
    sleep 0.5
-   echo $light > /sys/class/gpio/gpio11/value
+   echo 0 > /sys/class/gpio/gpio11/value
+   echo 0 > /sys/class/gpio/gpio22/value
    sleep 0.5
    time=$(($time-1))
  done
@@ -52,8 +57,8 @@ sleepn () {
 
 #function to start the web browser and get ready to change mode
 startbrowser () {
- echo 1 > /sys/class/gpio/gpio11/value
- light=1
+ echo 0 > /sys/class/gpio/gpio11/value
+ echo 0 > /sys/class/gpio/gpio22/value
  echo starting epiphany
  if [ "$1" != "test" ]; then
   export DISPLAY=":99"
@@ -93,12 +98,10 @@ stopbrowser () {
  echo closing browser
  xdotool mousemove --sync 580 48 click 1
  sleepn 3
- echo 0 > /sys/class/gpio/gpio11/value
- light=0
  echo waiting for switch
 }
 
-# announce our presence by flashing the light 3 times
+# announce our presence by flashing the lights 3 times
  sleepn 3
 
 # wait for a switch push, up or down
@@ -111,6 +114,8 @@ while true; do
   echo setting \"motion on\" mode
   xdotool mousemove --sync 25 307 click 1
   stopbrowser
+  # leave red light on
+  echo 1 > /sys/class/gpio/gpio11/value
   fi
 read val < /sys/class/gpio/gpio10/value
  if (( val == 0 )); then
@@ -119,5 +124,7 @@ read val < /sys/class/gpio/gpio10/value
   echo setting \"motion off\" mode
   xdotool mousemove --sync 25 259 click 1
   stopbrowser
+  # leave green light on
+  echo 1 > /sys/class/gpio/gpio22/value
   fi
 done
