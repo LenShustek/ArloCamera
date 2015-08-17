@@ -1,5 +1,6 @@
 Instructions for building a switchbox to turn the Netgear Arlo camera motion detector on and off
 ** L. Shustek, 11 Aug 2015
+** L. Shustek, 17 Aug 2015, add second (green) light
 
 1. Buy the CanaKit Raspberry Pi 2 Starter Kit with WiFi for $85 (list) or $70 (Amazon)
      http://www.canakit.com/raspberry-pi-2-basic-kit.html
@@ -24,15 +25,19 @@ Instructions for building a switchbox to turn the Netgear Arlo camera motion det
   - Exit the web browser. 
   - Choose menu/shutdown.
 
-3. Add the switch and light
+3. Add the switch and lights
   - Wire a single-pole double-throw momentary-contact switch (SPDT Mom-Off-Mom) as follows:
-      - the center lead to a ground (like pin 26 on the 40-pin header)
+      - the center lead to a ground (like pin 20 or 25 on the 40-pin header)
       - the "motion on" switch contact to GPIO9, pin 21
       - the "motion off" switch contact to GPIO10, pin 19
-  - Wire an LED as follows:
-      - the cathode (negative) to a ground (like pin 20)
+  - Wire a red LED as follows:
+      - the cathode (negative) to a ground (like pin 20 or 25)
       - the anode (positive) to one end of a 680-ohm 1/8 watt resistor
       - the other end of the resistor to GPIO11, pin 23
+  - Wire a green LED as follows:
+      - the cathode (negative) to a ground (like pin 20 or 25)
+      - the anode (positive) to one end of a 1K-ohm 1/8 watt resistor
+      - the other end of the resistor to GPIO22, pin 15
   - Power up
 
 4. Install the software
@@ -45,10 +50,10 @@ Instructions for building a switchbox to turn the Netgear Arlo camera motion det
   - Initialize the Xvnc server by typing "vncserver :99". Give it (and remember) a simple 6-character password. 
     Don't provide a view-only password.
 
-5.- Test your switch and light
+5.- Test your switch and lights
    - In the terminal windows, type "bash testswitch"
-   - Push switch up momentarily; the light should go on.
-   - Push the switch down momentarily; the light should go off.
+   - Push switch up momentarily; the red light should go on.
+   - Push the switch down momentarily; the green light should go on.
 
 6. Test controlling the camera mode with the keyboard/mouse/screen attached
   - In the terminal window, type "bash arlo test". (Ignore "Device or resource busy" errors.)
@@ -63,8 +68,9 @@ Instructions for building a switchbox to turn the Netgear Arlo camera motion det
   - Run a terminal emulator like Putty, http://www.putty.org/
   - Power up the Raspberry Pi and login
   - Type "bash arlo". When you see "waiting for switch", mometarily move the switch.
-  - The LED will flash. It should start the browser, login to Arlo, 
+  - The LEDs will flash. It should start the browser, login to Arlo, 
     set the motion-detection off or on depending on which way you moved the switch, then exit.
+    If you turned motion sensing on, the red light ("recording") will be on. If off, the greean light will be on.
   - Verify that the change occured by logging on to arlo.netgear.com from another browser.
 
 8. Make it autostart without a keyboard/mouse/screen
