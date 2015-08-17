@@ -6,7 +6,7 @@ by preset schedule (which doesn't work for us) or by clicking a bunch
 of menus on their web interface (which is a pain). I wanted a way to
 turn on motion sensing by just pushing a button when I leave the house.
 
-So I took a Raspberry Pi computer, added a switch and light, and 
+So I took a Raspberry Pi computer, added a switch and lights, and 
 programmed it to enable or disable the Arlo camera motion sensing. 
 You push the switch either up or down, and it logs into the Arlo 
 website and does the right mouse movements and clicks for you.
