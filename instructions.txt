@@ -1,34 +1,30 @@
 Instructions for building a switchbox to turn the Netgear Arlo camera motion detector on and off
+
 ** L. Shustek, 11 Aug 2015
 ** L. Shustek, 17 Aug 2015; add second (green) light
 ** L. Shustek, 21 Aug 2015; note that two cameras work fine; other minor clarifications
+** L. Shustek, 14 Sep 2016; redo using Jeffrey Walter's Python HTTP library for Arlo 
+                            instead of generating browser mouse movements. Much nicer!
 
-1. Buy the CanaKit Raspberry Pi 2 Starter Kit with WiFi for $85 (list) or $70 (Amazon)
-     http://www.canakit.com/raspberry-pi-2-basic-kit.html
-     http://www.amazon.com/CanaKit-Raspberry-Complete-Original-Preloaded/dp/B008XVAVAW
-  - Assemble it, following the instructions in the Quick-Start Guide.
-  - Temporarily install a USB keyboard and mouse -- the Logitech MK320 wireless set works great -- 
-    and an HDMI-connected screen.
-  - Apply power through the micro-USB connector.
-  - Choose Raspbian as the operating system.
-  - Reboot. 
-  - Login as "pi", password "raspberry".
-  - Type "startx" to start the graphical windows interface.
-  - Run the wifi configuration program from Menu/Preferences/WiFiConfiguration.
-  - Scan for networks and double-click the one you want. Enter your configuration (including password),
-    click "Add", then "Close", then "Connect".
-
-2. Test and configure the web browser for auto-login to arlo.netgear
-  - Click on the globe logo on the top row for the Epiphany web browser.
-  - Go to settings/preferences/privacy and unclick "Remember passwords".
-  - Type "arlo.netgear.com/#/login" in the address bar and hit return. It should go to the Arlo login page.
-  - Enter your credentials, tick "Remember me", and Log In. 
-  - Log out.
-  - Exit the web browser. 
-  - Choose menu/shutdown.
-
-3. Add the switch and lights
-  - Wire a single-pole double-throw momentary-contact switch (SPDT Mom-Off-Mom) as follows:
+1. Buy and configure the CanaKit Raspberry Pi 3 Starter Kit with WiFi
+  - For $75 on Amazon:  https://www.amazon.com/CanaKit-Raspberry-Complete-Starter-Kit/dp/B01C6Q2GSY
+    (You could also use the older Raspberry Pi 2 if you have one, but the 3 is the same price and faster,
+     and it comes with a newer version of Raspbian preinstalled on the micro SD card.)
+  - Assemble it, following the instructions in the Quick-Start Guide. Temporarily install a USB keyboard 
+    and mouse (Logitech MK320, say) and an HDMI-connected screen. Configure the Wifi as described in the Guide.
+  - Insert a USB memory stick containing my files from the Arlo repository into one of the USB ports.
+  - "Open in File Manager".
+  - Drag the following files to the "pi" directory, which is on the top of the list:
+      arlobox.py
+      Arlo.py
+      testswitch.bash
+  - Double-click on "arlobox.py" in the pi directory
+  - Edit the lines with USERNAME and PASSWORD to be the login credentials at www.arlo.netgear.com for your camera.
+  - Save it and exit
+  - Do Menu/Shutdown
+  
+2. Add the switch and lights
+  - Wire a single-pole double-throw momentary-contact switch, "SPDT (On)-Off-(On)", as follows:
       - the center lead to a ground (like pin 20 or 25 on the 40-pin header)
       - the "motion on" switch contact to GPIO9, pin 21
       - the "motion off" switch contact to GPIO10, pin 19
@@ -40,83 +36,66 @@ Instructions for building a switchbox to turn the Netgear Arlo camera motion det
       - the cathode (negative) to a ground (like pin 20 or 25)
       - the anode (positive) to one end of a 1K-ohm 1/8 watt resistor
       - the other end of the resistor to GPIO22, pin 15
-  - Power up
-
-4. Install the software
-  - Open a terminal window by clicking on the terminal icon on the top row.
-  - Type "sudo apt-get install xdotool tightvncserver x11-xserver-utils". Confirm that you want to continue.
-  - Insert a USB memory stick containing the arlo scripts into one of the USB ports.
-  - "Open in File Manager".
-  - Drag the arlo scripts to the "pi" directory (on the top of the list).
-  - Close the File Manager and remove the USB stick.
-  - Initialize the Xvnc server by typing "vncserver :99". Give it (and remember) a simple 6-character password. 
-    Don't provide a view-only password.
-
-5.- Test your switch and lights
-   - In the terminal windows, type "bash testswitch".
+ 
+3. Test your switch and lights
+   - Reboot with the keyboard, mouse, and monitor connected. Open a terminal window.
+   - Type "bash testswitch.bash".
    - Push switch up momentarily; the red light should go on.
    - Push the switch down momentarily; the green light should go on.
+   - Ctrl-C to exit the test
 
-6. Test controlling the camera mode with the keyboard/mouse/screen attached
-  - In the terminal window, type "bash arlo test". (Ignore "Device or resource busy" errors.)
-  - When you see "waiting for switch", mometarily push the switch. Don't touch the mouse!
-  - The LEDs will flash. It should start the browser, login to Arlo, 
-    set the motion-detection off or on depending on which way you moved the switch, then exit.
- 
-7. (Optional but helpful if there are problems) Run it from a serial console without a keyboard/mouse/screen attached 
-  - Power down ("sudo shutdown -h now") and disconnect the keyboard/screen/mouse.
-  - Connect a USB serial cable like https://www.adafruit.com/products/954 to your computer.
-    (See https://learn.adafruit.com/adafruits-raspberry-pi-lesson-5-using-a-console-cable?view=all)
-  - Run a terminal emulator like Putty, http://www.putty.org/.
-  - Power up the Raspberry Pi and login.
-  - Type "bash arlo". When you see "waiting for switch", mometarily move the switch.
-  - The LEDs will flash. It should start the browser, login to Arlo, 
-    set the motion-detection off or on depending on which way you moved the switch, then exit.
-    If you turned motion sensing on, the red light ("recording") will be on. If off, the green light will be on.
-  - Verify that the change occured by logging on to arlo.netgear.com from another browser.
+4. Test controlling the camera mode 
+  - Type "python3 arlobox.py"
+  - When you see "waiting for switch", momentarily push the switch up or down. 
+  - The lights will flash. It should login to Arlo and set the motion-detection off or on, 
+    depending on which way you moved the switch. If up, the red light ("recording") will be lit
+    indicating the camera is "armed". If off, the green light ("idle") will be lit for "disamrmed".
+  - Verify that the change occured by logging on to arlo.netgear.com from a browser on another computer.
+  - Cnrl-C to exit the test
 
-8. Make it autostart without a keyboard/mouse/screen
-   - (1) Bypass the login request for the serial port console
-     - From a terminal window, execute "sudo nano /etc/inittab" to edit the configuration file.
-     - Comment out the last line with a # at the beginning
-        # T0:23:respawn:/sbin/getty -L ttyAMA0 115200 vt100
-       and add this line afterwards:
-        T0:23:respawn:/bin/login -f pi ttyAMA0 </dev/ttyAMA0 >/dev/ttyAMA0 2>&1
-   - (2) Make our script run automatically
-      - chmod +x arlo
-      - "nano .bashrc", and at the end of the file add these lines:
-           #start arlo camera controller
-           echo From .bashrc: starting Arlo
-           if [ $(tty) == /dev/ttyAMA0 ]; then
-             ./arlo
-           fi 
-    - Test it: "bash powerdown" to shut down. Disconnect the keyboard/screen/mouse, and power up.
-      If you want, you can keep the serial terminal connected to see what is happening, but in general
-      the only things you need plugged into the Raspberry Pi are the wifi adapter and the power cord.
-    - Once you do this, the ttyAMA0 user will always log in and start monitoring the switch when you power up. 
-      If you want to make changes using a keyboard/screen/mouse, you need to shut down the ttyAMA0 process. 
-      I do that by connecting a serial console and hitting ctrl-C, but there are no doubt Linux commands that 
-      will do it from the keyboard/screen user process.
+5. Make it autostart without a keyboard/mouse/screen
+     - Type "sudo leafpad /etc/rc.local"
+     - before the last ("exit 0") line, add a line that says
+          python3 /home/pi/arlobox.py &
+       then save and exit
+       
+6.  Run it
+    - Menu/Shutdown and shut down. Disconnect the keyboard/screen/mouse, and power up.
+    - Once it boots, both lights will flash for a few seconds, then both will go on. Push the switch up or
+      down to arm or disarm the camera
+    - If it works, you're done!
+
 
 Other notes:
-
--  I've tested this with one and two cameras. Based on the web page layout, it looks like it should 
-   also work with 3 or 4. I don't know what happens, though, if you add custom Arlo "modes".
-   
-- In general, this isn't a very robust solution because it depends on exactly what's on the browser screen. 
-  Eventually we hope that Netgear will add a programming interface, perhaps using the USB port on the Arlo gateway.
-
-- To find screen coordinates for moving the mouse to other browser window locations
-  - Boot with a keyboard/mouse/screen attached, and start the GUI with "startx".
-  - Open a terminal window and type "bash mouseloc". 
-    The browser will start, the window will be repositioned and resized to the upper left corner, and the mouse 
-    position will be displayed as you move it. Record the locations you need to enter in the "arlo" file.
-  - Ctrl-C in the terminal window to stop it.
-  
-- To cleanly shut down from a terminal window in a better way than just removing power
-  - bash powerdown
-
+- This assumes that "arm" is mode1 and "disarm" is mode0. I don't know what happens if you add custom Arlo modes.
 - To fix files that were edited in Windows and have extraneous ctrl-M characters:
    - sudo apt-get install dos2unix
    - dos2unix <file>
+- To see what directories python looks for import libraries in:
+    - import sys
+    - print (sys.path)
+- Once it is set up to autostart, arlobox.py will start monitoring the switch when you power up. 
+      If you want to make changes to the code at that point, you need to first shut down the arlobox Python process. 
+      Type "sudo pkill -e python"
+- If you're using an old Raspberry Pi 2 without Python 3.x, you'll have it install it. You can try something like this:
+    - Reboot with the keyboard, mouse, and monitor connected. Login as pi, raspberry
+    - From the command window, install Python 3.5 and the "requests" and "GPIO" libraries as follows:
+        cd ~
+        wget https://www.python.org/ftp/python/3.5.1/Python-3.5.1.tgz  #get Python 3.5 source
+        tar -zxvf Python-3.5.1.tgz
+        cd Python-3.5.1
+        ./configure
+        make  #compile it: takes about 10-15 minutes!
+        sudo make install 
+        sudo apt-get install python3-pip  #install the package manager
+        sudo pip3 install requests    
+        sudo pip3 install rpi.gpio
+ - If there are problems without a keyboard/mouse/screen attached, try watching from a serial terminal:
+   - Connect a USB serial cable like https://www.adafruit.com/products/954 to your computer.
+     (See https://learn.adafruit.com/adafruits-raspberry-pi-lesson-5-using-a-console-cable?view=all)
+   - Run a terminal emulator on your compute like Putty, http://www.putty.org/.
+   - Power up the Raspberry Pi and open a terminal windows
+   - Type "sudo python3 arlobox.py". When you see "waiting for switch", momentarily move the switch and
+     see what messages are shown on the terminal.
+
 

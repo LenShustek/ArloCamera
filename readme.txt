@@ -9,10 +9,10 @@ turn on motion sensing by just pushing a button when I leave the house.
 So I took a Raspberry Pi computer, added a switch and lights, and 
 programmed it to enable or disable the Arlo camera motion sensing. 
 You push the switch either up or down, and it logs into the Arlo 
-website and does the right mouse movements and clicks for you.
-It takes about a minute, but it happens automatically.
+website and changes the mode. It takes about 10 seconds.
 
 The file "instructions.txt" is a description of how to build this.
 I would say it is a "medium hard" do-it-yourself project.
 
--- Len Shustek, 11 Aug 2015
+-- Len Shustek, 11 Aug 2015; updated 14 Sep 2016 to use Jeffrey Walter's 
+   great Arlo HTTP Python library instead of doing browser mouse clicks
