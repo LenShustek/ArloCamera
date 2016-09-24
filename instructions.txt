@@ -5,12 +5,14 @@ Instructions for building a switchbox to turn the Netgear Arlo camera motion det
 ** L. Shustek, 21 Aug 2015; note that two cameras work fine; other minor clarifications
 ** L. Shustek, 14 Sep 2016; redo using Jeffrey Walter's Python HTTP library for Arlo 
                             instead of generating browser mouse movements. Much nicer!
+** L. Shustek, 24 Sep 2016; add arm delay, and integration with an alarm system
 
 1. Buy and configure the CanaKit Raspberry Pi 3 Starter Kit with WiFi
   - For $75 on Amazon:  https://www.amazon.com/CanaKit-Raspberry-Complete-Starter-Kit/dp/B01C6Q2GSY
     (You could also use the older Raspberry Pi 2 if you have one, but the 3 is the same price and faster,
-     and it comes with a newer version of Raspbian preinstalled on the micro SD card.)
-  - Assemble it, following the instructions in the Quick-Start Guide. Temporarily install a USB keyboard 
+    and it comes with a newer version of Raspbian "Jessie" preinstalled on the micro SD card.)
+    If you do use and older one, you should download and install Raspbian Jessie using NOOBS.)
+ - Assemble it, following the instructions in the Quick-Start Guide. Temporarily install a USB keyboard 
     and mouse (Logitech MK320, say) and an HDMI-connected screen. Configure the Wifi as described in the Guide.
   - Insert a USB memory stick containing my files from the Arlo repository into one of the USB ports.
   - "Open in File Manager".
@@ -21,7 +23,7 @@ Instructions for building a switchbox to turn the Netgear Arlo camera motion det
   - Double-click on "arlobox.py" in the pi directory
   - Edit the lines with USERNAME and PASSWORD to be the login credentials at www.arlo.netgear.com for your camera.
   - Save it and exit
-  - Do Menu/Shutdown
+  - Do Menu/Shutdown. Remove the USB memory stick.
   
 2. Add the switch and lights
   - Wire a single-pole double-throw momentary-contact switch, "SPDT (On)-Off-(On)", as follows:
@@ -36,6 +38,8 @@ Instructions for building a switchbox to turn the Netgear Arlo camera motion det
       - the cathode (negative) to a ground (like pin 20 or 25)
       - the anode (positive) to one end of a 1K-ohm 1/8 watt resistor
       - the other end of the resistor to GPIO22, pin 15
+  - If you want to integrate with a security alarm system, 
+      - wire an "alarm system active" contact closure from GPIO4, pin 7, to a ground pin
  
 3. Test your switch and lights
    - Reboot with the keyboard, mouse, and monitor connected. Open a terminal window.
@@ -51,35 +55,29 @@ Instructions for building a switchbox to turn the Netgear Arlo camera motion det
     depending on which way you moved the switch. If up, the red light ("recording") will be lit
     indicating the camera is "armed". If off, the green light ("idle") will be lit for "disamrmed".
   - Verify that the change occured by logging on to arlo.netgear.com from a browser on another computer.
-  - Cnrl-C to exit the test
+  - Cnrl-C to exit the test.
 
 5. Make it autostart without a keyboard/mouse/screen
      - Type "sudo leafpad /etc/rc.local"
-     - before the last ("exit 0") line, add a line that says
+     - Before the last line ("exit 0"), add a line that says
           python3 /home/pi/arlobox.py &
-       then save and exit
+       then save and exit.
        
 6.  Run it
     - Menu/Shutdown and shut down. Disconnect the keyboard/screen/mouse, and power up.
     - Once it boots, both lights will flash for a few seconds, then both will go on. Push the switch up or
-      down to arm or disarm the camera
-    - If it works, you're done!
+      down to arm or disarm the camera.
+    - You're done!
 
 
-Other notes:
+Other notes and handy tips:
 - This assumes that "arm" is mode1 and "disarm" is mode0. I don't know what happens if you add custom Arlo modes.
-- To fix files that were edited in Windows and have extraneous ctrl-M characters:
-   - sudo apt-get install dos2unix
-   - dos2unix <file>
-- To see what directories python looks for import libraries in:
-    - import sys
-    - print (sys.path)
-- Once it is set up to autostart, arlobox.py will start monitoring the switch when you power up. 
+- Once it is set up to autostart, arlobox.py will start monitoring the switch box as soon as you power up. 
       If you want to make changes to the code at that point, you need to first shut down the arlobox Python process. 
       Type "sudo pkill -e python"
-- If you're using an old Raspberry Pi 2 without Python 3.x, you'll have it install it. You can try something like this:
-    - Reboot with the keyboard, mouse, and monitor connected. Login as pi, raspberry
-    - From the command window, install Python 3.5 and the "requests" and "GPIO" libraries as follows:
+- If you insist on using an old Raspberry Pi with an old version of Rasbpian that doesn't have Python 3.x, you'll have
+   to install it, along with the "requests" and "GPIO" libraries. You can try something like this from a command window,
+   but it would be easier to just install the latest Raspbian Jessie, which comes with Python 3.
         cd ~
         wget https://www.python.org/ftp/python/3.5.1/Python-3.5.1.tgz  #get Python 3.5 source
         tar -zxvf Python-3.5.1.tgz
@@ -90,12 +88,16 @@ Other notes:
         sudo apt-get install python3-pip  #install the package manager
         sudo pip3 install requests    
         sudo pip3 install rpi.gpio
+ - To see what directories python looks in for import libraries, from the Python command windows:
+    - import sys
+    - print(sys.path)
  - If there are problems without a keyboard/mouse/screen attached, try watching from a serial terminal:
    - Connect a USB serial cable like https://www.adafruit.com/products/954 to your computer.
      (See https://learn.adafruit.com/adafruits-raspberry-pi-lesson-5-using-a-console-cable?view=all)
    - Run a terminal emulator on your compute like Putty, http://www.putty.org/.
    - Power up the Raspberry Pi and open a terminal windows
-   - Type "sudo python3 arlobox.py". When you see "waiting for switch", momentarily move the switch and
+   - Type "python3 arlobox.py". When you see "waiting for switch", momentarily move the switch and
      see what messages are shown on the terminal.
-
-
+ - To fix files that were edited in Windows and have extraneous ctrl-M characters:
+   - sudo apt-get install dos2unix
+   - dos2unix <file>
