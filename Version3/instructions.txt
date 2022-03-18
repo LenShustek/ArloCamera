@@ -1,0 +1,84 @@
+Instructions for building a switchbox to turn the Netgear Arlo camera motion detector on and off
+
+** L. Shustek, 11 Aug 2015
+** L. Shustek, 17 Aug 2015; add second (green) light
+** L. Shustek, 21 Aug 2015; note that two cameras work fine; other minor clarifications
+** L. Shustek, 14 Sep 2016; redo using Jeffrey Walter's Python HTTP library for Arlo 
+                            instead of generating browser mouse movements. Much nicer!
+** L. Shustek, 24 Sep 2016; add arm delay, and integration with an alarm system
+** L. Shustek, 18 Mar 2022; change to use IFTTT
+
+1. Buy and configure the CanaKit Raspberry Pi 3 Starter Kit with WiFi
+  - For $75 on Amazon:  https://www.amazon.com/CanaKit-Raspberry-Complete-Starter-Kit/dp/B01C6Q2GSY
+  - Assemble it, following the instructions in the Quick-Start Guide. Temporarily install a USB keyboard 
+    and mouse (Logitech MK320, say) and an HDMI-connected screen. Configure the Wifi as described in the Guide.
+  - Insert a USB memory stick containing my files from the Arlo repository into one of the USB ports.
+  - "Open in File Manager".
+  - Drag the following files to the "pi" directory, which is on the top of the list:
+      arlobox.py
+      testswitch.bash
+  - Double-click on "arlobox.py" in the pi directory
+  - Edit the lines with IFTTT_LOCATION (whatever you want your location to be called) and 
+    IFTTT_KEY (the key you get from www.ifttt.com when you register and create an applet.
+  - Save it and exit
+  - Do Menu/Shutdown. Remove the USB memory stick.
+  
+2. Add the switch and lights
+  - Wire a single-pole double-throw momentary-contact switch, "SPDT (On)-Off-(On)", as follows:
+      - the center lead to a ground (like pin 20 or 25 on the 40-pin header)
+      - the "motion on" switch contact to GPIO9, pin 21
+      - the "motion off" switch contact to GPIO10, pin 19
+  - Wire a red LED as follows:
+      - the cathode (negative) to a ground (like pin 20 or 25)
+      - the anode (positive) to one end of a 680-ohm 1/8 watt resistor
+      - the other end of the resistor to GPIO11, pin 23
+  - Wire a green LED as follows:
+      - the cathode (negative) to a ground (like pin 20 or 25)
+      - the anode (positive) to one end of a 1K-ohm 1/8 watt resistor
+      - the other end of the resistor to GPIO22, pin 15
+  - If you want to integrate with a security alarm system, 
+      - wire an "alarm system active" contact closure from GPIO4, pin 7, to a ground pin
+ 
+3. Test your switch and lights
+   - Reboot with the keyboard, mouse, and monitor connected. Open a terminal window.
+   - Type "bash testswitch.bash".
+   - Push switch up momentarily; the red light should go on.
+   - Push the switch down momentarily; the green light should go on.
+   - Ctrl-C to exit the test
+
+4. Test controlling the camera mode 
+  - Type "python3 arlobox.py"
+  - When you see "waiting for switch", momentarily push the switch up or down. 
+  - The lights will flash. It should use IFTTT to set the motion-detection off or on, 
+    depending on which way you moved the switch. If up, the red light ("recording") will be lit
+    indicating the camera is "armed". If off, the green light ("idle") will be lit for "disamrmed".
+  - Verify that the change occured by logging on to arlo.netgear.com from a browser on another computer.
+  - Cnrl-C to exit the test.
+
+5. Make it autostart without a keyboard/mouse/screen
+     - Type "sudo leafpad /etc/rc.local"
+     - Before the last line ("exit 0"), add a line that says
+          python3 /home/pi/arlobox.py &
+       then save and exit.
+       
+6.  Run it
+    - Menu/Shutdown and shut down. Disconnect the keyboard/screen/mouse, and power up.
+    - Once it boots, both lights will flash for a few seconds, then both will go on. Push the switch up or
+      down to arm or disarm the camera.
+    - You're done!
+
+Other notes and handy tips:
+- Once it is set up to autostart, arlobox.py will start monitoring the switch box as soon as you power up. 
+      If you want to make changes to the code at that point, you need to first shut down the arlobox Python process. 
+      Type "sudo pkill -e python"
+ - If there are problems without a keyboard/mouse/screen attached, try watching from a serial terminal:
+   - Connect a USB serial cable like https://www.adafruit.com/products/954 to your computer.
+     (See https://learn.adafruit.com/adafruits-raspberry-pi-lesson-5-using-a-console-cable?view=all)
+   - Run a terminal emulator on your compute like Putty, http://www.putty.org/.
+   - Power up the Raspberry Pi and open a terminal windows
+   - Type "python3 arlobox.py". When you see "waiting for switch", momentarily move the switch and
+     see what messages are shown on the terminal.
+ - To fix files that were edited in Windows and have extraneous ctrl-M characters:
+   - sudo apt-get install dos2unix
+   - dos2unix <file>
+   
